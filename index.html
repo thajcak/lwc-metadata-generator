@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salesforce LWC XML Generator</title>
+  <link rel="stylesheet" href="styles.css"></style>
+  <script src="https://cdn.counter.dev/script.js" data-id="be0e2339-ad55-4c14-a619-5b1aa64c6ff2" data-utcoffset="-5"></script>
+</head>
+<body>
+  <div class="header">
+	<h1>Salesforce LWC Metadata XML Generator</h1>
+	<button type="button" id="generateXMLButton">Generate XML</button>
+  </div>
+
+  <div class="container">
+	<div class="config-section">
+	  <form id="configForm">
+
+		<div class="input-row">
+		  <div class="input-group">
+			<label for="apiVersion">API Version</label>
+			<input type="number" id="apiVersion" value="61.0">
+		  </div>
+		  <div class="input-group">
+			<label for="masterLabel">Master Label</label>
+			<input type="text" id="masterLabel" placeholder="Component master label">
+		  </div>
+		</div>
+
+		<label for="description">Description:</label>
+		<textarea id="description" placeholder="Component description"></textarea>
+
+		<label for="isExposed"><input type="checkbox" id="isExposed" checked>Is Exposed</label>
+
+		<hr />
+
+		<h3>Targets</h3>
+		<label><input type="checkbox" class="target-checkbox" value="lightning__AppPage">App Page</label>
+		<label><input type="checkbox" class="target-checkbox" value="lightning__HomePage">Home Page</label>
+		<label><input type="checkbox" class="target-checkbox" value="lightning__RecordPage">Record Page</label>
+
+		<!-- Container for Target Configurations -->
+		<h3>Target Configurations</h3>
+		<div id="targetConfigContainer"></div>
+	  </form>
+	</div>
+
+	<!-- XML Output Section -->
+	<div class="xml-section">
+	  <h2>Generated XML</h2>
+	  <pre id="xmlOutput" readonly></pre>
+	</div>
+  </div>
+
+  <script type="module" src="./js/script.js"></script>
+</body>
+</html>
