@@ -39,19 +39,17 @@ function addTargetConfig(target) {
   container.className = 'targetConfig-container';
   container.id = `targetConfig-${target}`;
 
-  // Remove the "Target Config: lightning..." heading
+  // Use the extracted HTML snippet for the target config
   container.innerHTML = getTargetConfigHTML(target);
 
-  // Add property fields for `lightning__RecordPage`, `lightning__HomePage`, and `lightning__AppPage`
-  if (target === 'lightning__RecordPage' || target === 'lightning__HomePage' || target === 'lightning__AppPage') {
-	const propertiesContainer = document.createElement('div');
-	propertiesContainer.id = `properties-${target}`;
-	propertiesContainer.innerHTML = `
-	  <button type="button" onclick="addProperty('${target}')">Add Property</button>
-	  <div id="propertiesList-${target}" style="display: flex; flex-direction: column;"></div>
-	`;
-	container.appendChild(propertiesContainer);
-  }
+  // Create properties container and add "Add Property" button
+  const propertiesContainer = document.createElement('div');
+  propertiesContainer.id = `properties-${target}`;
+  propertiesContainer.innerHTML = `
+	<div id="propertiesList-${target}" style="display: flex; flex-direction: column;"></div>
+	<button type="button" class="add-property-button" onclick="addProperty('${target}')">Add Property</button>
+  `;
+  container.appendChild(propertiesContainer);
 
   // Insert the target configuration container directly below the toggle and label
   const targetCheckbox = document.querySelector(`input[value="${target}"]`);
@@ -67,10 +65,12 @@ window.addProperty = function(target) {
   propertyContainer.className = 'property-container';
   propertyContainer.id = propertyId;
 
-  // Use the extracted HTML snippet for the property container
-  propertyContainer.innerHTML = getPropertyHTML(propertyId); // This should create the property type dropdown and other inputs
+  // Use the updated HTML snippet for the property container
+  propertyContainer.innerHTML = getPropertyHTML(propertyId); // This should create the rearranged property inputs
 
-  propertiesList.appendChild(propertyContainer); // Ensure this is appended to the DOM
+  // Insert the new property above the Add Property button
+  const addPropertyButton = propertiesList.querySelector('.add-property-button');
+  propertiesList.insertBefore(propertyContainer, addPropertyButton);
 };
 
 // Handle property type change to show specific inputs based on type
@@ -81,7 +81,7 @@ window.handlePropertyTypeChange = function(propertyId) {
   // Clear existing inputs
   additionalInputsContainer.innerHTML = '';
 
-  // Use extracted HTML snippets for Integer and String inputs
+  // Use extracted HTML snippets for Integer and String inputs, placed next to Property Type
   if (propertyType === 'Integer') {
 	additionalInputsContainer.innerHTML = getIntegerInputsHTML(propertyId);
   } else if (propertyType === 'String') {
