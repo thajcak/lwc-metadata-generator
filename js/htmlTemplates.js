@@ -1,16 +1,33 @@
 // HTML for target config container
 export function getTargetConfigHTML(target) {
   return `
-	<h4>Target Config: ${target}</h4>
 	<label for="formFactors-${target}">Supported Form Factors:</label>
-	<select id="formFactors-${target}" multiple>
-	  <option value="Small">Small</option>
-	  <option value="Medium">Medium</option>
-	  <option value="Large">Large</option>
-	</select>
+	<div id="formFactors-${target}" style="display: flex; gap: 10px;">
+	  <label class="toggle-label">
+		<label class="switch">
+		  <input type="checkbox" value="Small">
+		  <span class="slider"></span>
+		</label>
+		Small
+	  </label>
+	  <label class="toggle-label">
+		<label class="switch">
+		  <input type="checkbox" value="Medium">
+		  <span class="slider"></span>
+		</label>
+		Medium
+	  </label>
+	  <label class="toggle-label">
+		<label class="switch">
+		  <input type="checkbox" value="Large">
+		  <span class="slider"></span>
+		</label>
+		Large
+	  </label>
+	</div>
 
-	<label for="objects-${target}">Objects (comma separated):</label>
-	<input type="text" id="objects-${target}" placeholder="Object 1, Object 2">
+	<label for="objects-${target}" style="display: block; margin-top: 10px;">Objects (comma separated):</label>
+	<input type="text" id="objects-${target}" placeholder="Object 1, Object 2" style="width: 100%;">
   `;
 }
 
