@@ -1,106 +1,195 @@
-import { getTargetConfigHTML, getPropertyHTML, getIntegerInputsHTML, getStringInputsHTML } from './htmlTemplates.js';
-import { generateXML } from './xmlGenerator.js'; // Import the generateXML function
+import { getTargetConfigHTML, getPropertyHTML, getIntegerInputsHTML, getStringInputsHTML, getTargetsCatalogHTML, getEventHTML } from './htmlTemplates.js';
+import { generateXML } from './xmlGenerator.js';
+import { getAllowedPropertyAttributes, getTargetDefinition } from './metadataSchema.js';
+
+let refreshTimer;
 
 document.addEventListener('DOMContentLoaded', function() {
+  const targetsContainer = document.getElementById('targetsContainer');
+  const wrapXmlToggle = document.getElementById('wrapXmlToggle');
+  targetsContainer.innerHTML = getTargetsCatalogHTML();
+  const configForm = document.getElementById('configForm');
   const targetCheckboxes = document.querySelectorAll('.target-checkbox');
   targetCheckboxes.forEach(checkbox => checkbox.addEventListener('change', handleTargetChange));
 
-  // Attach event listener for Generate XML button
-  document.getElementById('generateXMLButton').addEventListener('click', function() {
-	generateXML();
-	const xmlOutput = document.getElementById('xmlOutput');
-	xmlOutput.scrollIntoView({ behavior: 'smooth' });
+  configForm.addEventListener('input', function(event) {
+	sanitizeXmlUnsafeInput(event);
+	scheduleRefreshXML();
   });
+  configForm.addEventListener('change', scheduleRefreshXML);
+
+  wrapXmlToggle.addEventListener('change', function(event) {
+	setXmlWrapMode(event.target.checked);
+  });
+
+  setXmlWrapMode(wrapXmlToggle.checked);
+  refreshXML();
 });
 
-let targetConfigCount = 0;
-
-// Handle target checkbox changes (add/remove target configuration)
 function handleTargetChange(event) {
   const target = event.target.value;
   const checkbox = event.target;
 
-  // Toggle target config visibility based on checkbox state
   if (checkbox.checked) {
-	addTargetConfig(target); // Add target configuration when target is selected
+	addTargetConfig(target);
   } else {
-	removeTargetConfig(target); // Remove target configuration when target is deselected
+	removeTargetConfig(target);
   }
+  refreshXML();
 }
 
-// Add a new targetConfig entry dynamically below the checkbox and label
 function addTargetConfig(target) {
-  // Check if the targetConfig already exists
   if (document.getElementById(`targetConfig-${target}`)) return;
-
-  targetConfigCount++;
 
   const container = document.createElement('div');
   container.className = 'targetConfig-container';
   container.id = `targetConfig-${target}`;
+  const targetDefinition = getTargetDefinition(target);
+  if (!targetDefinition) return;
 
-  // Use the extracted HTML snippet for the target config
-  container.innerHTML = getTargetConfigHTML(target);
-
-  // Create properties container and add "Add Property" button
-  const propertiesContainer = document.createElement('div');
-  propertiesContainer.id = `properties-${target}`;
-  propertiesContainer.innerHTML = `
-	<div id="propertiesList-${target}" style="display: flex; flex-direction: column;"></div>
-	<button type="button" class="add-property-button" onclick="addProperty('${target}')">Add Property</button>
+  container.innerHTML = `
+	<h4>${targetDefinition.label} <code>${targetDefinition.value}</code></h4>
+	${getTargetConfigHTML(targetDefinition)}
   `;
-  container.appendChild(propertiesContainer);
 
-  // Insert the target configuration container directly below the toggle and label
-  const targetCheckbox = document.querySelector(`input[value="${target}"]`);
-  targetCheckbox.parentElement.parentElement.insertAdjacentElement('afterend', container);
+  if (targetDefinition.supports.properties) {
+	const propertiesContainer = document.createElement('div');
+	propertiesContainer.id = `properties-${target}`;
+	propertiesContainer.innerHTML = `
+	  <h5>Properties</h5>
+	  <div id="propertiesList-${target}" class="properties-list"></div>
+	  <button type="button" class="add-property-button" onclick="addProperty('${target}')">Add Property</button>
+	`;
+	container.appendChild(propertiesContainer);
+  }
+
+  const configSlot = document.getElementById(`targetConfigSlot-${target}`);
+  if (configSlot) {
+	configSlot.appendChild(container);
+  }
+  refreshXML();
 }
 
-// Make addProperty function globally accessible
 window.addProperty = function(target) {
   const propertiesList = document.getElementById(`propertiesList-${target}`);
+  if (!propertiesList) return;
+  const targetDefinition = getTargetDefinition(target);
+  if (!targetDefinition) return;
   const propertyId = `property-${target}-${Date.now()}`;
 
   const propertyContainer = document.createElement('div');
   propertyContainer.className = 'property-container';
   propertyContainer.id = propertyId;
 
-  // Use the updated HTML snippet for the property container
-  propertyContainer.innerHTML = getPropertyHTML(propertyId); // This should create the rearranged property inputs
+  propertyContainer.innerHTML = getPropertyHTML(propertyId, targetDefinition.propertyTypes || ['Boolean', 'Integer', 'String']);
 
-  // Insert the new property above the Add Property button
-  const addPropertyButton = propertiesList.querySelector('.add-property-button');
-  propertiesList.insertBefore(propertyContainer, addPropertyButton);
+  propertiesList.appendChild(propertyContainer);
+  window.handlePropertyTypeChange(propertyId);
+  refreshXML();
 };
 
-// Handle property type change to show specific inputs based on type
+window.addEvent = function(target) {
+  const eventsList = document.getElementById(`eventsList-${target}`);
+  if (!eventsList) return;
+  const eventId = `event-${target}-${Date.now()}`;
+  const eventContainer = document.createElement('div');
+  eventContainer.className = 'property-container';
+  eventContainer.id = eventId;
+  eventContainer.innerHTML = getEventHTML(eventId);
+  eventsList.appendChild(eventContainer);
+  refreshXML();
+};
+
 window.handlePropertyTypeChange = function(propertyId) {
+  const target = extractTargetFromPropertyId(propertyId);
+  if (!target) return;
   const propertyType = document.getElementById(`propertyType-${propertyId}`).value;
   const additionalInputsContainer = document.getElementById(`additionalInputs-${propertyId}`);
+  const allowedAttributes = getAllowedPropertyAttributes(target, propertyType);
 
-  // Clear existing inputs
   additionalInputsContainer.innerHTML = '';
 
-  // Use extracted HTML snippets for Integer and String inputs, placed next to Property Type
   if (propertyType === 'Integer') {
-	additionalInputsContainer.innerHTML = getIntegerInputsHTML(propertyId);
+	additionalInputsContainer.innerHTML = getIntegerInputsHTML(propertyId, allowedAttributes);
   } else if (propertyType === 'String') {
-	additionalInputsContainer.innerHTML = getStringInputsHTML(propertyId);
+	additionalInputsContainer.innerHTML = getStringInputsHTML(propertyId, allowedAttributes);
   }
+  refreshXML();
 };
 
-// Remove a property
 window.removeProperty = function(propertyId) {
   const propertyElement = document.getElementById(propertyId);
   if (propertyElement) {
 	propertyElement.remove();
   }
+  refreshXML();
 };
 
-// Remove a targetConfig entry
+window.removeEvent = function(eventId) {
+  const eventElement = document.getElementById(eventId);
+  if (eventElement) {
+	eventElement.remove();
+  }
+  refreshXML();
+};
+
 function removeTargetConfig(target) {
   const targetConfigElement = document.getElementById(`targetConfig-${target}`);
   if (targetConfigElement) {
-	targetConfigElement.remove(); // Remove the entire target configuration
+	targetConfigElement.remove();
   }
+  refreshXML();
+}
+
+function renderWarnings(warnings) {
+  const warningOutput = document.getElementById('validationOutput');
+  if (!warningOutput) return;
+  if (!warnings.length) {
+	warningOutput.textContent = '';
+	warningOutput.classList.remove('has-content');
+	return;
+  }
+  const warningMarkup = warnings.map((warning) => `<li>${warning}</li>`).join('');
+  warningOutput.innerHTML = `<strong>Validation warnings</strong><ul>${warningMarkup}</ul>`;
+  warningOutput.classList.add('has-content');
+}
+
+function extractTargetFromPropertyId(propertyId) {
+  if (!propertyId.startsWith('property-')) return null;
+  const timestampSeparator = propertyId.lastIndexOf('-');
+  if (timestampSeparator <= 'property-'.length) return null;
+  return propertyId.slice('property-'.length, timestampSeparator);
+}
+
+function scheduleRefreshXML() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refreshXML, 60);
+}
+
+function refreshXML() {
+  const result = generateXML();
+  renderWarnings(result.warnings || []);
+}
+
+function setXmlWrapMode(isWrapped) {
+  const xmlOutput = document.getElementById('xmlOutput');
+  if (!xmlOutput) return;
+  xmlOutput.classList.toggle('no-wrap', !isWrapped);
+}
+
+function sanitizeXmlUnsafeInput(event) {
+  const target = event.target;
+  if (!target) return;
+  if (target.id === 'apiVersion' || target.type === 'checkbox' || target.tagName === 'SELECT') return;
+  if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
+  if (target.type && target.type !== 'text' && target.tagName !== 'TEXTAREA') return;
+
+  const original = target.value;
+  const sanitized = original.replace(/[<>&"']/g, '');
+  if (sanitized === original) return;
+
+  const cursorOffset = original.length - (target.selectionStart || original.length);
+  target.value = sanitized;
+  const nextCursor = Math.max(0, sanitized.length - cursorOffset);
+  target.setSelectionRange(nextCursor, nextCursor);
 }

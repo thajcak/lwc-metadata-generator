@@ -1,0 +1,8 @@
+{
+  "name": "lwc-metadata-builder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:fixtures": "node test-fixtures/run-fixtures.mjs"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "warns when lightningCommunity__Default is missing pair target",
+  "input": {
+    "apiVersion": "61.0",
+    "masterLabel": "Community Config",
+    "description": "",
+    "isExposed": true,
+    "groupCompatibleTargets": true,
+    "targets": [
+      "lightningCommunity__Default"
+    ],
+    "targetConfigs": [
+      {
+        "target": "lightningCommunity__Default",
+        "formFactors": [],
+        "objects": [],
+        "properties": [
+          {
+            "name": "heading",
+            "type": "String",
+            "label": "Heading",
+            "placeholder": "will be dropped"
+          }
+        ],
+        "events": [],
+        "attributeValues": {}
+      }
+    ]
+  },
+  "expectedWarningsContains": [
+    "lightningCommunity__Default should be paired with one of: lightningCommunity__Page, lightningCommunity__Theme_Layout.",
+    "lightningCommunity__Default does not support property attribute \"placeholder\" for String."
+  ],
+  "expectedXmlNotContains": [
+    "placeholder="
+  ]
+}

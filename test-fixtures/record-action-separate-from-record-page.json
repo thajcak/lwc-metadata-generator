@@ -1,0 +1,42 @@
+{
+  "name": "does not group incompatible targets",
+  "input": {
+    "apiVersion": "61.0",
+    "masterLabel": "Mixed Targets",
+    "description": "Incompatible capabilities",
+    "isExposed": true,
+    "groupCompatibleTargets": true,
+    "targets": [
+      "lightning__RecordPage",
+      "lightning__RecordAction"
+    ],
+    "targetConfigs": [
+      {
+        "target": "lightning__RecordPage",
+        "formFactors": ["Small"],
+        "objects": ["Account"],
+        "properties": [],
+        "events": [],
+        "attributeValues": {}
+      },
+      {
+        "target": "lightning__RecordAction",
+        "formFactors": ["Small"],
+        "objects": [],
+        "properties": [],
+        "events": [],
+        "attributeValues": {
+          "actionType": "Action"
+        }
+      }
+    ]
+  },
+  "expectedWarnings": [],
+  "expectedXmlContains": [
+    "<targetConfig targets=\"lightning__RecordPage\">",
+    "<targetConfig targets=\"lightning__RecordAction\" actionType=\"Action\">"
+  ],
+  "expectedXmlNotContains": [
+    "targets=\"lightning__RecordAction,lightning__RecordPage\""
+  ]
+}

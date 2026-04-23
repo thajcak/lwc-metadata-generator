@@ -1,0 +1,55 @@
+{
+  "name": "groups compatible app and home configs",
+  "input": {
+    "apiVersion": "61.0",
+    "masterLabel": "Shared Component",
+    "description": "Grouped config",
+    "isExposed": true,
+    "groupCompatibleTargets": true,
+    "targets": [
+      "lightning__HomePage",
+      "lightning__AppPage"
+    ],
+    "targetConfigs": [
+      {
+        "target": "lightning__HomePage",
+        "formFactors": ["Large"],
+        "objects": [],
+        "properties": [
+          {
+            "name": "title",
+            "type": "String",
+            "label": "Title",
+            "required": "true"
+          }
+        ],
+        "events": [],
+        "attributeValues": {}
+      },
+      {
+        "target": "lightning__AppPage",
+        "formFactors": ["Large"],
+        "objects": [],
+        "properties": [
+          {
+            "name": "title",
+            "type": "String",
+            "label": "Title",
+            "required": "true"
+          }
+        ],
+        "events": [],
+        "attributeValues": {}
+      }
+    ]
+  },
+  "expectedWarnings": [],
+  "expectedXmlContains": [
+    "<targetConfig targets=\"lightning__AppPage,lightning__HomePage\">",
+    "<supportedFormFactor type=\"Large\" />"
+  ],
+  "expectedXmlNotContains": [
+    "<targetConfig targets=\"lightning__HomePage\">",
+    "<targetConfig targets=\"lightning__AppPage\">"
+  ]
+}

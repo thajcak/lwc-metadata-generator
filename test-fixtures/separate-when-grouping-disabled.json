@@ -1,0 +1,37 @@
+{
+  "name": "keeps separate configs when grouping disabled",
+  "input": {
+    "apiVersion": "61.0",
+    "masterLabel": "Separate Component",
+    "description": "Ungrouped config",
+    "isExposed": true,
+    "groupCompatibleTargets": false,
+    "targets": [
+      "lightning__HomePage",
+      "lightning__AppPage"
+    ],
+    "targetConfigs": [
+      {
+        "target": "lightning__HomePage",
+        "formFactors": ["Small"],
+        "objects": [],
+        "properties": [],
+        "events": [],
+        "attributeValues": {}
+      },
+      {
+        "target": "lightning__AppPage",
+        "formFactors": ["Large"],
+        "objects": [],
+        "properties": [],
+        "events": [],
+        "attributeValues": {}
+      }
+    ]
+  },
+  "expectedWarnings": [],
+  "expectedXmlContains": [
+    "<targetConfig targets=\"lightning__HomePage\">",
+    "<targetConfig targets=\"lightning__AppPage\">"
+  ]
+}
